@@ -1,0 +1,869 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  /* === GLOBAL SETUP === */
+  html, body {
+    margin: 0; padding: 0; width: 100%; overflow-x: hidden;
+    background-color: #ffffff; /* Clean white background */
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  #tys-wrapper {
+    font-family: 'Montserrat', sans-serif;
+    background: #ffffff;
+    min-height: 100vh;
+    color: #333;
+    box-sizing: border-box;
+    padding-bottom: 80px;
+    background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+    background-size: 30px 30px; /* Subtle dot pattern for official look */
+  }
+  #tys-wrapper * { box-sizing: border-box; }
+
+  /* === APP CONTAINER === */
+  #tys-wrapper .app-box {
+    width: 100%; max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 15px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  /* === HEADER TYPOGRAPHY === */
+  #tys-wrapper h2 {
+    color: #000080; /* Navy Blue */
+    margin: 0 0 8px 0; text-align: center;
+    font-weight: 900; font-size: 32px;
+    text-transform: uppercase; letter-spacing: 1px;
+    font-family: 'Oswald', sans-serif;
+  }
+
+  #tys-wrapper p.desc { 
+    color: #138808; /* Green accent */
+    margin-bottom: 40px; text-align: center; 
+    font-size: 15px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* === NEW NGO VERIFICATION UI === */
+  #tys-wrapper .tys-auth {
+    background: #ffffff;
+    border-radius: 12px; 
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 15px 35px rgba(0, 0, 128, 0.08);
+    padding: 40px 50px;
+    display: flex; flex-direction: column; gap: 25px;
+    width: 100%; 
+    max-width: 750px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Tiranga Flag Top Border */
+  #tys-wrapper .tys-auth::before {
+    content: "";
+    position: absolute; top: 0; left: 0; width: 100%; height: 8px;
+    background: linear-gradient(to right, #FF9933 33.3%, #f1f5f9 33.3%, #f1f5f9 66.6%, #138808 66.6%);
+    border-bottom: 2px solid #000080;
+  }
+
+  #tys-wrapper .auth-head { text-align: center; margin-bottom: 10px; }
+
+  #tys-wrapper .auth-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #000080; color: #ffffff;
+    padding: 6px 16px; border-radius: 4px;
+    font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+    margin-bottom: 15px;
+  }
+
+  #tys-wrapper .auth-title { font-size: 24px; font-weight: 800; color: #000080; margin-bottom: 6px; }
+  #tys-wrapper .auth-sub { font-size: 14px; color: #64748b; font-weight: 500; }
+
+  #tys-wrapper .auth-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    width: 100%;
+  }
+
+  #tys-wrapper .auth-field { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+
+  #tys-wrapper .auth-label {
+    font-size: 12px; font-weight: 800; color: #000080; 
+    text-transform: uppercase; letter-spacing: 0.8px; margin-left: 2px;
+  }
+
+  #tys-wrapper .auth-input-wrap { position: relative; width: 100%; }
+
+  #tys-wrapper .input-icon {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    color: #FF9933; font-size: 18px; transition: color 0.3s;
+  }
+
+  #tys-wrapper .secure-input {
+    width: 100%; 
+    padding: 16px 16px 16px 48px;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 15px; color: #000080;
+    background: #ffffff;
+    font-family: 'Montserrat', sans-serif; font-weight: 700;
+    transition: all 0.3s ease;
+  }
+    
+  #tys-wrapper .secure-input::placeholder { color: #94a3b8; font-weight: 500; }
+
+  #tys-wrapper .secure-input:focus {
+    outline: none; border-color: #138808; background: #f8fafc;
+    box-shadow: 0 0 0 4px rgba(19, 136, 8, 0.1);
+  }
+  #tys-wrapper .secure-input:focus + .input-icon, 
+  #tys-wrapper .secure-input:focus ~ .input-icon { color: #138808; }
+
+  #tys-wrapper .auth-hint { font-size: 11px; color: #64748b; font-weight: 600; margin-left: 2px; }
+
+  #tys-wrapper .btn-verify {
+    background: #FF9933; /* Saffron Button */
+    color: #ffffff; border: none; padding: 18px;
+    border-radius: 8px; cursor: pointer; 
+    font-weight: 800; font-size: 16px; 
+    width: 100%; margin-top: 15px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    text-transform: uppercase; letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 15px rgba(255, 153, 51, 0.3);
+  }
+  #tys-wrapper .btn-verify:hover {
+    background: #138808; /* Green Hover */
+    box-shadow: 0 8px 20px rgba(19, 136, 8, 0.3);
+    transform: translateY(-2px);
+  }
+  #tys-wrapper .btn-verify:active { transform: scale(0.98); }
+
+  #tys-wrapper #status-msg {
+    font-weight: 700; font-size: 13px; color: #000080; 
+    text-align: center; min-height: 20px;
+    padding: 12px; background: #f8fafc; border-radius: 6px;
+    border: 1px dashed #cbd5e1;
+  }
+
+  /* === MOBILE RESPONSIVENESS FOR AUTH UI === */
+  @media (max-width: 650px) {
+    #tys-wrapper .auth-grid { grid-template-columns: 1fr; gap: 20px; }
+    #tys-wrapper .tys-auth { padding: 30px 20px; border-radius: 8px; }
+    #tys-wrapper h2 { font-size: 26px; }
+  }
+
+  /* === GRID & RESULTS === */
+  #tys-wrapper #grid-area {
+    display: flex; flex-direction: column; gap: 50px; align-items: center; width: 100%; margin-top: 40px;
+  }
+
+  #tys-wrapper .member-row {
+    display: flex; gap: 40px; align-items: flex-start; justify-content: center;
+    background: #ffffff; padding: 40px; 
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 15px 30px rgba(0, 0, 128, 0.05);
+    animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    flex-wrap: wrap; width: 100%; max-width: 1000px;
+  }
+  @keyframes slideUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+
+  #tys-wrapper .preview-col { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+  #tys-wrapper .preview-label { font-size: 12px; color: #000080; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+
+  #tys-wrapper .action-buttons { display: flex; flex-direction: column; gap: 15px; justify-content: center; }
+
+  #tys-wrapper .action-btn {
+    color: white; border: none; padding: 20px 30px;
+    border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 800;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    box-shadow: 0 8px 20px rgba(0, 0, 128, 0.2); transition: all 0.3s;
+    min-width: 180px; 
+    text-transform: uppercase;
+  }
+  #tys-wrapper .btn-print { background: #000080; }
+  #tys-wrapper .btn-print:hover { background: #FF9933; box-shadow: 0 8px 20px rgba(255, 153, 51, 0.4); transform: translateY(-2px); }
+  #tys-wrapper .btn-print:active { transform: scale(0.95); }
+
+  /* ========================================================= */
+  /* === ID CARD WRAPPER & 3D EFFECT (STRICTLY UNTOUCHED) === */
+  /* ========================================================= */
+  #tys-wrapper .id-card-wrapper {
+    width: 54mm; height: 85.6mm;
+    position: relative;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.05);
+    background: transparent;
+    border-radius: 3.18mm;
+    transition: transform 0.3s ease;
+    transform-style: preserve-3d;
+  }
+
+  /* === INTERNAL CARD STRUCTURE === */
+  #tys-wrapper .id-card {
+    width: 54mm; height: 85.6mm;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif;
+    color: #333;
+    display: flex; flex-direction: column;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+    border-radius: 3.18mm;
+  }
+
+  #tys-wrapper .id-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%);
+    pointer-events: none; z-index: 20;
+  }
+
+  /* === FRONT SIDE === */
+  #tys-wrapper .v-header {
+    height: 18%;
+    background: #002347;
+    width: 100%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 5;
+    padding: 0 2mm 0 3mm;
+    clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);
+    border-bottom: 2px solid #FF9933;
+  }
+  #tys-wrapper .v-header::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: #FF9933; z-index: 6; }
+
+  #tys-wrapper .v-header-content { display: flex; align-items: center; justify-content: flex-start; width: 100%; }
+  #tys-wrapper .v-header-logo { width: 8.5mm; height: auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3)); margin-right: 1.5mm; flex-shrink: 0; }
+  #tys-wrapper .v-header-text { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
+
+  #tys-wrapper .v-id-label {
+    font-size: 4pt; color: #FF9933; font-weight: 700; 
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5px;
+  }
+
+  #tys-wrapper .v-org-name {
+    font-size: 8.5pt; font-weight: 900; color: white;
+    text-transform: uppercase; margin: 0; line-height: 1;
+    font-family: 'Oswald', sans-serif; letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  #tys-wrapper .v-org-sub {
+    font-size: 3.2pt; font-weight: 600; color: #fff;
+    text-transform: uppercase; margin-top: 1.5px; line-height: 1.1;
+    font-family: 'Montserrat', sans-serif;
+    text-align: left;
+  }
+
+  #tys-wrapper .v-body {
+    flex: 1; position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    padding-top: 2mm;
+    background: #ffffff; 
+    padding-bottom: 5mm;
+    overflow: hidden;
+  }
+
+  #tys-wrapper .watermark-overlay {
+    position: absolute; top: 48%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 35mm; opacity: 0.10; z-index: 0; pointer-events: none; filter: grayscale(100%);
+  }
+
+  #tys-wrapper .v-photo-frame {
+    width: 20mm; height: 24mm; background: white; border-radius: 4px;
+    position: relative; z-index: 5; margin-bottom: 1.5mm;
+    border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.15); overflow: hidden;
+  }
+  #tys-wrapper .v-user-photo { width: 100%; height: 100%; object-fit: cover; padding: 1px; border-radius: 3px; }
+
+  #tys-wrapper .v-name-block { text-align: center; margin-bottom: 1.5mm; z-index: 5; width: 95%; position: relative; }
+  #tys-wrapper .v-name-text {
+    font-size: 10pt; font-weight: 900; text-transform: uppercase; line-height: 1.1; margin-bottom: 1px;
+    color: #002347; font-family: 'Montserrat', sans-serif;
+  }
+  #tys-wrapper .v-role-badge {
+    background: #FF9933; color: white; font-size: 5pt; font-weight: 700;
+    padding: 1.5px 8px; border-radius: 0px; display: inline-block; text-transform: uppercase; letter-spacing: 1px;
+    clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+  }
+
+  #tys-wrapper .v-details-table { width: 90%; z-index: 5; margin-bottom: auto; position: relative; }
+  #tys-wrapper .v-row { display: flex; align-items: center; margin-bottom: 1px; border-bottom: 1px solid #eee; padding: 1px 0; }
+  #tys-wrapper .v-row:last-child { border: none; }
+  #tys-wrapper .v-lbl { width: 40%; font-weight: 700; color: #666; font-size: 5pt; text-transform: uppercase; letter-spacing: 0.2px; }
+  #tys-wrapper .v-val { width: 60%; font-weight: 800; color: #000; text-align: right; font-size: 6pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  #tys-wrapper .v-codes-row {
+    display: flex; justify-content: center; align-items: center; width: 95%;
+    margin-top: auto; margin-bottom: 1mm; gap: 3mm; z-index: 5; position: relative;
+  }
+  #tys-wrapper .v-qr-side {
+    width: 9mm; height: 9mm; background: white; padding: 1px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #eee;
+  }
+  #tys-wrapper .v-qr-side img { width: 100%; height: 100%; }
+
+  #tys-wrapper .v-barcode-side { height: 9mm; flex: 1; display: flex; align-items: center; justify-content: center; }
+  #tys-wrapper .v-barcode-side svg { width: 100%; height: 100%; }
+
+  #tys-wrapper .v-footer {
+    position: absolute; bottom: 0; left: 0; height: 5mm; background: #002347; width: 100%;
+    display: flex; align-items: center; justify-content: center;
+    color: #FF9933; font-size: 5pt; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+    z-index: 5; border-top: 1px solid #FF9933;
+  }
+
+  /* === BACK SIDE === */
+  #tys-wrapper .vb-container { display: flex; flex-direction: column; height: 100%; width: 100%; position: relative; }
+  #tys-wrapper .vb-header {
+    height: 12%; background: #002347; display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 800; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 1px;
+    z-index: 2; border-bottom: 2px solid #FF9933;
+  }
+
+  #tys-wrapper .vb-body {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    padding: 0mm 3mm 3mm 3mm; text-align: center; position: relative; background: #fff;
+  }
+
+  #tys-wrapper .vb-terms { width: 100%; margin-top: 2mm; margin-bottom: 2mm; }
+  #tys-wrapper .vb-terms-title { font-size: 4pt; font-weight: 900; color: #002347; text-transform: uppercase; text-align: center; text-decoration: underline; margin-bottom: 1px; }
+  #tys-wrapper .vb-terms-text { font-size: 4pt; color: #444; text-align: center; line-height: 1.1; font-weight: 500; }
+
+  #tys-wrapper .vb-logo-main { width: 14mm; height: auto; margin-top: 0; opacity: 1.0; }
+  #tys-wrapper .vb-ngo-title {
+    font-size: 8pt; font-weight: 900; color: #002347; text-transform: uppercase; text-align: center;
+    margin-top: 0.5mm; margin-bottom: 3mm; width: 90%;
+  }
+
+  #tys-wrapper .vb-qr-label { font-size: 4.5pt; font-weight: 800; color: #FF9933; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5px; }
+  #tys-wrapper .vb-qr-container { width: 13mm; height: 13mm; margin-bottom: 3mm; border: 1px solid #ccc; padding: 1px; background: white; }
+  #tys-wrapper .vb-qr-container img { width: 100%; height: 100%; }
+
+  #tys-wrapper .vb-info-block { width: 100%; text-align: left; margin-top: 0; }
+  #tys-wrapper .vb-row-item { display: flex; gap: 2mm; margin-bottom: 1.5mm; align-items: flex-start; }
+  #tys-wrapper .vb-icon-box { color: #FF9933; width: 3mm; font-size: 6pt; margin-top: 1px; }
+  #tys-wrapper .vb-text-val { font-size: 5pt; color: #444; font-weight: 600; line-height: 1.2; text-align: left; }
+
+  #tys-wrapper .vb-sign-section {
+    width: 100%; display: flex; flex-direction: column; align-items: flex-end; margin-top: auto; margin-bottom: 3.5mm; padding-right: 1mm;
+  }
+  #tys-wrapper .vb-stamp { width: 14mm; opacity: 0.8; mix-blend-mode: multiply; transform: rotate(-10deg); margin-bottom: 1px; }
+  #tys-wrapper .vb-sign-label { font-size: 4pt; font-weight: 800; color: #002347; text-transform: uppercase; border-top: 1px solid #333; padding-top: 1px; }
+
+  #tys-wrapper .vb-footer {
+    position: absolute; bottom: 0; left: 0; height: 5mm; width: 100%; background: #138808;
+    display: flex; align-items: center; justify-content: center; color: white; font-size: 4.5pt; font-weight: 600; text-transform: uppercase;
+  }
+
+  /* === RESPONSIVE SCALE FOR CARDS === */
+  @media (max-width: 450px) {
+    #tys-wrapper .app-box { padding: 20px 10px !important; }
+    #tys-wrapper .member-row { flex-direction: column; gap: 40px; padding: 30px 15px; width: 100%; }
+    #tys-wrapper .id-card-wrapper { transform-origin: center top; transform: scale(0.9); margin-bottom: -10mm; }
+  }
+</style>
+
+<div id="tys-wrapper">
+  <div class="app-box">
+    <h2>ID Card Verification</h2>
+    <p class="desc">Official Member Database Portal</p>
+
+    <div class="controls tys-auth">
+      <div class="auth-head">
+        <div class="auth-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Official Access Only</span>
+        </div>
+        <div class="auth-title">Verify Member Identity</div>
+        <div class="auth-sub">Enter registered details below to access and generate your ID card.</div>
+      </div>
+
+      <div class="auth-grid">
+        <label class="auth-field">
+          <span class="auth-label">Member ID</span>
+          <span class="auth-input-wrap">
+            <i class="fa-solid fa-id-card input-icon"></i>
+            <input type="text" id="inputId" class="secure-input" placeholder="e.g. TYM-121" autocomplete="off" inputmode="text">
+          </span>
+          <span class="auth-hint">Exact ID as issued by the organization</span>
+        </label>
+
+        <label class="auth-field">
+          <span class="auth-label">Phone Number</span>
+          <span class="auth-input-wrap">
+            <i class="fa-solid fa-phone input-icon"></i>
+            <input type="text" id="inputPhone" class="secure-input" placeholder="e.g. 9053575169" autocomplete="off" inputmode="numeric">
+          </span>
+          <span class="auth-hint">Registered mobile number</span>
+        </label>
+      </div>
+
+      <button class="btn-verify" onclick="window.verifyAndSearch()">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span>Verify & Generate Card</span>
+      </button>
+
+      <div id="status-msg">System Ready. Waiting for secure input...</div>
+    </div>
+    <div id="grid-area"></div>
+  </div>
+</div>
+
+<script>
+  // Add Viewport Meta if missing
+  if (!document.querySelector('meta[name="viewport"]')) {
+    const meta = document.createElement('meta');
+    meta.name = "viewport";
+    meta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
+    document.getElementsByTagName('head')[0].appendChild(meta);
+  }
+
+  // === CONFIGURATION ===
+  const EXCEL_FILE_URL = "https://docs.google.com/spreadsheets/d/1p1ynKWyRErPwczTcMkffZfQ7dhOiV9buv_gIVRK3uh0/export?format=csv&gid=85144492";
+
+  const CONFIG = {
+    ngoName: "Tiranga Yuva Samiti",
+    logoUrl: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhCaJCRPLvQgi9REoAvb9b4H4Vvh6RhAmMRGwGEolXIqS2nxxCa9-jS7qexF2JL5puwPOEk-2q7ubDKeL-m-BM0_7_uHrI5EnBXue7deGtgta4UyCDnI43AkB1KBN8PV4G00fg1vW2La338AyzZkHvXpzt49papqeYLt9NDXMcTnvsceg/s1600/TYS-White.png",
+    stampUrl: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj72nNAiChUf9ROOPiYDrwg4RSatVygGQEt7yW1lOmQosfBW9MB2V3qZAcYcOHH-0bAb_2QBZSUsL_9xdVIdpZdvVOha0czW1ssESptg8Mg3X6W8K1DuyPio_oh6X4DdNH2xUhRc2fX1AkpJh2RuPYl5b0a16nYSTgGrkQnKuwYvz3lsQ/s1600/Lokesh%20Stamp.jpg",
+    donateUrl: "https://www.tirangayuvasamiti.org/donate/",
+    contact: {
+      phone: "+91 90535 75169",
+      email: "info@tirangayuvasamiti.org",
+      web: "www.tirangayuvasamiti.org",
+      address: "VPO Khanda 9R, Tehsil Kharkhoda, Sonipat, Haryana – 131402"
+    }
+  };
+
+  let ALL_MEMBERS = [];
+
+  function getProxyUrl(url) {
+    if(!url) return "";
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png`;
+  }
+
+  const FIELD = {
+    first: "firstname",
+    last: "lastname",
+    father: "father_name",
+    id: "id",
+    role: "membership",
+    issueDate: "joined",
+    phone: "phone",
+    photo: "photo_url",
+    qr: "qr_code_url",
+    designation: "designation",
+    department: "department"
+  };
+
+  function formatDate(raw) {
+    if (!raw) return '________';
+    let dateObj;
+    if (typeof raw === 'number') {
+      dateObj = new Date(Math.round((raw - 25569) * 86400 * 1000));
+    } else {
+      const str = String(raw).trim();
+      if(str.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const parts = str.split('-');
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+      dateObj = new Date(str);
+    }
+    if (!isNaN(dateObj.getTime())) {
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const y = dateObj.getFullYear();
+      return `${d}-${m}-${y}`;
+    }
+    return raw;
+  }
+
+  // Safe WP Initialization
+  function initTYSApp() {
+    loadFromConfiguredUrl();
+    const idEl = document.querySelector('#tys-wrapper #inputId');
+    const phEl = document.querySelector('#tys-wrapper #inputPhone');
+    if(idEl && phEl) {
+      [idEl, phEl].forEach(el => {
+        el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') window.verifyAndSearch();
+        });
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTYSApp);
+  } else {
+    initTYSApp();
+  }
+
+  async function loadFromConfiguredUrl() {
+    const msg = document.querySelector('#tys-wrapper #status-msg');
+    if(!msg) return;
+    msg.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Connecting to Secure Database...';
+
+    try {
+      const response = await fetch(EXCEL_FILE_URL + "&t=" + new Date().getTime());
+      if (!response.ok) throw new Error("Network Error");
+      const arrayBuffer = await response.arrayBuffer();
+      const data = new Uint8Array(arrayBuffer);
+      const wb = XLSX.read(data, {type: 'array', cellDates: true});
+      ALL_MEMBERS = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+
+      if(ALL_MEMBERS.length) {
+        msg.innerHTML = `<span style="color:#138808">✅ Secure Connection Established.</span>`;
+      } else { 
+        msg.innerHTML = "Database is empty."; 
+      }
+    } catch (error) {
+      console.error(error);
+      msg.innerHTML = `<span style="color:#e74c3c">❌ Connection Failed. Check Internet.</span>`;
+    }
+  }
+
+  window.verifyAndSearch = function() {
+    const idInput = document.querySelector('#tys-wrapper #inputId').value.trim().toLowerCase();
+    const phoneInput = document.querySelector('#tys-wrapper #inputPhone').value.trim().toLowerCase();
+    const msg = document.querySelector('#tys-wrapper #status-msg');
+    const grid = document.querySelector('#tys-wrapper #grid-area');
+
+    if(!idInput || !phoneInput) {
+      msg.innerHTML = '<span style="color:#FF9933">⚠ Please provide both credentials.</span>';
+      grid.innerHTML = "";
+      return;
+    }
+
+    msg.innerHTML = "Authenticating Member...";
+
+    const filtered = ALL_MEMBERS.filter(member => {
+      const mID = String(member[FIELD.id] || '').toLowerCase().trim();
+      const mPhone = String(member[FIELD.phone] || '').toLowerCase().trim();
+      return mID.includes(idInput) && mPhone.includes(phoneInput);
+    });
+
+    if(filtered.length === 0) {
+      msg.innerHTML = '<span style="color:#e74c3c">❌ Verification Failed: Invalid Credentials.</span>';
+      grid.innerHTML = "";
+    } else {
+      msg.innerHTML = `✅ Identity Verified. Generating ID Card...`;
+      drawCards(filtered);
+    }
+  }
+
+  function drawCards(data) {
+    const grid = document.querySelector('#tys-wrapper #grid-area');
+    grid.innerHTML = "";
+
+    data.slice(0, 1).forEach((row, i) => {
+      const fName = (row[FIELD.first] || '').trim();
+      const lName = (row[FIELD.last] || '').trim();
+      const father = (row[FIELD.father] || '').trim();
+      const fullName = (fName + ' ' + lName).trim() || 'MEMBER NAME';
+      const fatherDisplay = father || '_______________';
+      const memID = row[FIELD.id] || '000';
+      const issueDate = formatDate(row[FIELD.issueDate]);
+      const memberPhone = row[FIELD.phone] || '_______________';
+      
+      const designationVal = (row[FIELD.designation] || 'Member').trim();
+      const departmentVal = (row[FIELD.department] || 'General').trim();
+
+      let rawPhoto = row[FIELD.photo] || 'https://via.placeholder.com/150x200?text=PHOTO';
+      let photoUrl = getProxyUrl(rawPhoto);
+      let logoUrl = getProxyUrl(CONFIG.logoUrl);
+      let stampUrl = getProxyUrl(CONFIG.stampUrl);
+
+      const finalQrUrl = row[FIELD.qr] || 'https://www.tirangayuvasamiti.org/';
+      const backSideQrUrl = `https://www.tirangayuvasamiti.org/member-verification/?id=${memID}`;
+        
+      const frontId = `card-front-${i}`;
+      const backId = `card-back-${i}`;
+      const frontQrId = `qr-front-${i}`;
+      const backQrId = `qr-back-${i}`;
+      const barcodeId = `barcode-${i}`;
+      const wrapperId = `wrapper-${i}`;
+
+      const html = `
+      <div class="member-row" id="${wrapperId}">
+        <div class="preview-col">
+          <div class="preview-label">Front Side</div>
+          <div class="id-card-wrapper" id="${frontId}">
+            <div class="id-card">
+              <div class="v-header">
+                <div class="v-header-content">
+                  <img src="${logoUrl}" class="v-header-logo" crossorigin="anonymous">
+                  <div class="v-header-text">
+                    <div class="v-id-label">IDENTITY CARD</div>
+                    <div class="v-org-name">${CONFIG.ngoName}</div>
+                    <div class="v-org-sub">(Reg. No. 01820) VPO Khanda 9R, Sonipat, Haryana</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="v-body">
+                <img src="${logoUrl}" class="watermark-overlay" crossorigin="anonymous">
+
+                <div class="v-photo-frame">
+                  <img src="${photoUrl}" class="v-user-photo" crossorigin="anonymous">
+                </div>
+
+                <div class="v-name-block">
+                  <div class="v-name-text">${fullName}</div>
+                  <div class="v-role-badge">ID: TYS-${memID}</div>
+                </div>
+
+                <div class="v-details-table">
+                  <div class="v-row"><div class="v-lbl">Father Name</div><div class="v-val">${fatherDisplay}</div></div>
+                  <div class="v-row"><div class="v-lbl">Designation</div><div class="v-val">${designationVal}</div></div>
+                  <div class="v-row"><div class="v-lbl">Department</div><div class="v-val">${departmentVal}</div></div>
+                  <div class="v-row"><div class="v-lbl">Contact Number</div><div class="v-val">${memberPhone}</div></div>
+                  <div class="v-row"><div class="v-lbl">Date of Issue</div><div class="v-val">${issueDate}</div></div>
+                  <div class="v-row"><div class="v-lbl">Validity</div><div class="v-val">As per TYS Records</div></div>
+                </div>
+
+                <div class="v-codes-row">
+                  <div id="${frontQrId}" class="v-qr-side"></div>
+                  <div class="v-barcode-side">
+                    <svg id="${barcodeId}"></svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="v-footer">
+                ${CONFIG.ngoName}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-col">
+          <div class="preview-label">Back Side</div>
+          <div class="id-card-wrapper" id="${backId}">
+            <div class="id-card">
+              <div class="vb-container">
+                <div class="vb-header">Official Identification</div>
+                <div class="vb-body">
+                  <div class="vb-terms">
+                    <div class="vb-terms-title">Terms & Conditions:</div>
+                    <div class="vb-terms-text">
+                      1. This card is non-transferable property.<br>
+                      2. If found, please return to the address below.
+                    </div>
+                  </div>
+
+                  <img src="${logoUrl}" class="vb-logo-main" crossorigin="anonymous">
+                  <div class="vb-ngo-title">${CONFIG.ngoName}</div>
+
+                  <div class="vb-qr-label">SCAN TO VERIFY MEMBER</div>
+                  <div id="${backQrId}" class="vb-qr-container"></div>
+
+                  <div class="vb-info-block">
+                    <div class="vb-row-item">
+                      <div class="vb-icon-box"><i class="fa-solid fa-location-dot"></i></div>
+                      <div class="vb-text-val">${CONFIG.contact.address}</div>
+                    </div>
+                    <div class="vb-row-item">
+                      <div class="vb-icon-box"><i class="fa-solid fa-phone"></i></div>
+                      <div class="vb-text-val">${CONFIG.contact.phone}</div>
+                    </div>
+                    <div class="vb-row-item">
+                      <div class="vb-icon-box"><i class="fa-solid fa-envelope"></i></div>
+                      <div class="vb-text-val">${CONFIG.contact.email}</div>
+                    </div>
+                    <div class="vb-row-item">
+                      <div class="vb-icon-box"><i class="fa-solid fa-globe"></i></div>
+                      <div class="vb-text-val">${CONFIG.contact.web}</div>
+                    </div>
+                  </div>
+
+                  <div class="vb-sign-section">
+                    <img src="${stampUrl}" class="vb-stamp" crossorigin="anonymous">
+                    <div class="vb-sign-label">Authorized Signatory</div>
+                  </div>
+                </div>
+                <div class="vb-footer">Together We Serve • Jai Hind</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="action-btn btn-print" onclick="window.printCard('${frontId}', '${backId}')">
+            <i class="fa-solid fa-print"></i>
+            <span>Print<br>Card</span>
+          </button>
+        </div>
+      </div>
+      `;
+      grid.innerHTML += html;
+
+      setTimeout(() => {
+        const frontQrDiv = document.getElementById(frontQrId);
+        const tempFrontQr = document.createElement('div');
+        new QRCode(tempFrontQr, { text: finalQrUrl, width: 64, height: 64, correctLevel: QRCode.CorrectLevel.L });
+        frontQrDiv.appendChild(convertCanvasToImg(tempFrontQr));
+
+        const backQrDiv = document.getElementById(backQrId);
+        const temp2 = document.createElement('div');
+        new QRCode(temp2, { text: backSideQrUrl, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.H });
+        backQrDiv.appendChild(convertCanvasToImg(temp2));
+
+        JsBarcode("#"+barcodeId, "TYS-"+memID, {
+          format: "CODE128",
+          displayValue: false,
+          height: 25,
+          margin: 0,
+          width: 1.2,
+          background: "transparent"
+        });
+      }, 100);
+    });
+  }
+
+  function convertCanvasToImg(container) {
+    const canvas = container.querySelector('canvas');
+    if(canvas) {
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL("image/png");
+      img.style.width = '100%'; img.style.height = '100%';
+      return img;
+    }
+    return container;
+  }
+
+  window.printCard = function(frontId, backId) {
+    const frontEl = document.getElementById(frontId);
+    const backEl  = document.getElementById(backId);
+    if (!frontEl || !backEl) return;
+
+    const frontHTML = frontEl.innerHTML;
+    const backHTML  = backEl.innerHTML;
+
+    const printHTML = `
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Print ID Card</title>
+          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+          <style>
+            @page { size: 54mm 85.6mm; margin: 0; }
+            html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-sheet { display: grid; gap: 0; }
+            .print-page { width: 54mm; height: 85.6mm; overflow: hidden; page-break-after: always; }
+            @media print { #manual-print-btn { display: none !important; } }
+            
+            #manual-print-btn {
+              position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+              background: #002347; color: white; padding: 15px 30px;
+              font-size: 16px; border-radius: 50px; font-weight: bold;
+              z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+              border: 2px solid white; cursor: pointer;
+            }
+
+            .id-card { width: 54mm; height: 85.6mm; position: relative; background:white; display:flex; flex-direction:column; border: 1px dotted #ccc; box-sizing: border-box; border-radius: 3.18mm; overflow: hidden; }
+            .v-header { height: 18%; background: #002347; width: 100%; display: flex; align-items: center; justify-content: center; position: relative; z-index: 5; padding: 0 2mm 0 3mm; clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%); border-bottom: 2px solid #FF9933; }
+            .v-header::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: #FF9933; z-index: 6; }
+            .v-header-content { display: flex; align-items: center; justify-content: flex-start; width: 100%; }
+            .v-header-logo { width: 8.5mm; height: auto; margin-right: 1.5mm; flex-shrink: 0; }
+            .v-header-text { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
+            .v-id-label { font-size: 4pt; color: #FF9933; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5px; }
+            .v-org-name { font-size: 8.5pt; font-weight: 900; color: white; text-transform: uppercase; margin: 0; line-height: 1; font-family: 'Oswald', sans-serif; letter-spacing: 0.5px; white-space: nowrap; }
+            .v-org-sub { font-size: 3.2pt; font-weight: 600; color: #fff; text-transform: uppercase; margin-top: 1.5px; line-height: 1.1; font-family: 'Montserrat', sans-serif; text-align: left; }
+            .v-body { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 1.5mm; background-color: #ffffff; padding-bottom: 5mm; overflow: hidden; }
+            .watermark-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 35mm; opacity: 0.10; z-index: 0; filter: grayscale(100%); }
+            .v-photo-frame { width: 20mm; height: 24mm; background: white; border-radius: 4px; position: relative; z-index: 5; margin-bottom: 1.5mm; border: 1px solid #ddd; overflow: hidden; }
+            .v-user-photo { width: 100%; height: 100%; object-fit: cover; padding: 1px; border-radius: 3px; }
+            .v-name-block { text-align: center; margin-bottom: 1.5mm; z-index: 5; width: 95%; position: relative; }
+            .v-name-text { font-size: 10pt; font-weight: 900; text-transform: uppercase; line-height: 1.1; margin-bottom: 1px; color: #002347; font-family: 'Montserrat', sans-serif; }
+            .v-role-badge { background: #FF9933; color: white; font-size: 5pt; font-weight: 700; padding: 1.5px 8px; border-radius: 0px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); }
+            .v-details-table { width: 90%; z-index: 5; margin-bottom: auto; position: relative; }
+            .v-row { display: flex; align-items: center; margin-bottom: 1px; border-bottom: 1px solid #eee; padding: 1px 0; }
+            .v-row:last-child { border: none; }
+            .v-lbl { width: 40%; font-weight: 700; color: #666; font-size: 5pt; text-transform: uppercase; letter-spacing: 0.2px; }
+            .v-val { width: 60%; font-weight: 800; color: #000; text-align: right; font-size: 6pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .v-codes-row { display: flex; justify-content: center; align-items: center; width: 95%; margin-top: auto; margin-bottom: 1mm; gap: 3mm; z-index: 5; position: relative; }
+            .v-qr-side { width: 9mm; height: 9mm; background: white; padding: 1px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #eee; }
+            .v-qr-side img { width: 100%; height: 100%; }
+            .v-barcode-side { height: 9mm; flex: 1; display: flex; align-items: center; justify-content: center; }
+            .v-barcode-side svg { width: 100%; height: 100%; }
+            .v-footer { position: absolute; bottom: 0; left: 0; height: 5mm; background: #002347; width: 100%; display: flex; align-items: center; justify-content: center; color: #FF9933; font-size: 5pt; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; z-index: 5; border-top: 1px solid #FF9933; }
+            .vb-container { display: flex; flex-direction: column; height: 100%; width: 100%; position: relative; }
+            .vb-header { height: 12%; background: #002347; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 7.5pt; text-transform: uppercase; letter-spacing: 1px; z-index: 2; border-bottom: 2px solid #FF9933; }
+            .vb-body { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0mm 3mm 3mm 3mm; text-align: center; position: relative; background: #fff; }
+            .vb-terms { width: 100%; margin-top: 2mm; margin-bottom: 2mm; }
+            .vb-terms-title { font-size: 4pt; font-weight: 900; color: #002347; text-transform: uppercase; text-align: center; text-decoration: underline; margin-bottom: 1px; }
+            .vb-terms-text { font-size: 4pt; color: #444; text-align: center; line-height: 1.1; font-weight: 500; }
+            .vb-logo-main { width: 14mm; height: auto; margin-top: 0; opacity: 1.0; }
+            .vb-ngo-title { font-size: 8pt; font-weight: 900; color: #002347; text-transform: uppercase; text-align: center; margin-top: 0.5mm; margin-bottom: 3mm; width: 90%; }
+            .vb-qr-label { font-size: 4.5pt; font-weight: 800; color: #FF9933; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5px; }
+            .vb-qr-container { width: 13mm; height: 13mm; margin-bottom: 3mm; border: 1px solid #ccc; padding: 1px; background: white; }
+            .vb-qr-container img { width: 100%; height: 100%; }
+            .vb-info-block { width: 100%; text-align: left; margin-top: 0; }
+            .vb-row-item { display: flex; gap: 2mm; margin-bottom: 1.5mm; align-items: flex-start; }
+            .vb-icon-box { color: #FF9933; width: 3mm; font-size: 6pt; margin-top: 1px; }
+            .vb-text-val { font-size: 5pt; color: #444; font-weight: 600; line-height: 1.2; text-align: left; }
+            .vb-sign-section { width: 100%; display: flex; flex-direction: column; align-items: flex-end; margin-top: auto; margin-bottom: 3.5mm; padding-right: 1mm; }
+            .vb-stamp { width: 14mm; opacity: 0.8; mix-blend-mode: multiply; transform: rotate(-10deg); margin-bottom: 1px; }
+            .vb-sign-label { font-size: 4pt; font-weight: 800; color: #002347; text-transform: uppercase; border-top: 1px solid #333; padding-top: 1px; }
+            .vb-footer { position: absolute; bottom: 0; left: 0; height: 5mm; width: 100%; background: #138808; display: flex; align-items: center; justify-content: center; color: white; font-size: 4.5pt; font-weight: 600; text-transform: uppercase; }
+
+            @media screen {
+              body { display:flex; justify-content:center; background: #333; padding-top: 80px; }
+              .print-sheet { padding: 0; background: white; }
+            }
+          </style>
+        </head>
+        <body>
+          <div id="manual-print-btn" onclick="window.print()">🖨️ TAP HERE TO PRINT</div>
+          <div class="print-sheet">
+            <div class="print-page">${frontHTML}</div>
+            <div class="print-page">${backHTML}</div>
+          </div>
+          <script>
+            (function(){
+              function allImagesLoaded(){
+                const imgs = Array.from(document.images || []);
+                return Promise.all(imgs.map(img => {
+                  if (img.complete) return Promise.resolve();
+                  return new Promise(res => { img.onload = img.onerror = res; });
+                }));
+              }
+              function doPrint(){ window.print(); }
+              allImagesLoaded().then(() => { setTimeout(doPrint, 500); });
+            })();
+          <\/script>
+        </body>
+      </html>
+    `;
+
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (!isMobile) {
+      let printFrame = document.createElement('iframe');
+      printFrame.style.position = 'fixed'; printFrame.style.top = '-9999px';
+      printFrame.style.left = '-9999px'; printFrame.style.width = '0px';
+      printFrame.style.height = '0px'; document.body.appendChild(printFrame);
+
+      const frameDoc = printFrame.contentWindow.document;
+      frameDoc.open(); frameDoc.write(printHTML); frameDoc.close();
+
+      setTimeout(() => {
+        printFrame.contentWindow.focus(); printFrame.contentWindow.print();
+        setTimeout(() => { document.body.removeChild(printFrame); }, 2000);
+      }, 900);
+
+    } else {
+      const w = window.open('', '_blank');
+      if (!w) { alert('Popup blocked. Please allow popups to print the card.'); return; }
+      w.document.open(); w.document.write(printHTML); w.document.close();
+    }
+  }
+</script>
