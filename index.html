@@ -1,268 +1,686 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiranga Yuva Samiti | Important Links</title>
+    <title>Tiranga Yuva Samiti | Official Links</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* =========================================
+           CSS VARIABLES & THEMING
+           ========================================= */
         :root {
+            /* Light Theme (Tricolor Inspired) */
+            --bg-color: #f0f4f8;
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            
             --saffron: #FF9933;
+            --saffron-dark: #cc7a29;
             --white: #FFFFFF;
             --green: #138808;
+            --green-dark: #0f6a06;
             --navy: #000080;
-            --bg-color: #f9f9f9;
-            --text-color: #333333;
+            --navy-dark: #00004d;
+            --shadow-color: rgba(0, 0, 0, 0.15);
         }
 
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+
+        /* =========================================
+           RESET & BASE STYLES
+           ========================================= */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         body {
-            /* Soft gradient background representing the tricolor */
-            background: linear-gradient(135deg, rgba(255,153,51,0.1) 0%, rgba(255,255,255,1) 50%, rgba(19,136,8,0.1) 100%);
-            color: var(--text-color);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            min-height: 100vh;
+            align-items: center;
+            overflow-x: hidden;
             padding: 2rem 1rem;
         }
 
-        .container {
+        /* =========================================
+           CANVAS BACKGROUND
+           ========================================= */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 600px;
-            background: var(--white);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 2.5rem 2rem;
-            text-align: center;
-            border-top: 5px solid var(--saffron);
-            border-bottom: 5px solid var(--green);
-            animation: fadeIn 0.8s ease-in-out;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
         }
 
-        /* Profile Section */
-        .profile-img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid var(--navy);
-            margin-bottom: 1rem;
-            padding: 2px;
+        /* =========================================
+           MAIN CONTAINER (3D GLASSMORPHISM)
+           ========================================= */
+        .tilt-wrapper {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 550px;
+            z-index: 10;
         }
 
-        .title {
-            color: var(--navy);
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .tagline {
-            color: #666;
-            font-size: 1rem;
-            margin-bottom: 2rem;
-            font-weight: 500;
-        }
-
-        /* Links Section */
-        .links-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .link-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            padding: 1rem;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            border: 1px solid #ddd;
+        .glass-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem 2rem;
+            box-shadow: 0 25px 50px -12px var(--shadow-color);
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
             position: relative;
             overflow: hidden;
         }
 
-        .link-btn i {
+        /* Top and Bottom tricolor borders */
+        .glass-container::before {
+            content: '';
             position: absolute;
-            left: 1.5rem;
-            font-size: 1.2rem;
+            top: 0; left: 0; right: 0; height: 6px;
+            background: linear-gradient(90deg, var(--saffron) 33%, var(--white) 33%, var(--white) 66%, var(--green) 66%);
         }
 
-        .link-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            color: var(--white);
-            border-color: transparent;
-        }
-
-        /* Unique hover colors for buttons */
-        .link-btn.primary:hover { background-color: var(--saffron); }
-        .link-btn.secondary:hover { background-color: var(--green); }
-        .link-btn.tertiary:hover { background-color: var(--navy); }
-        .link-btn.donate:hover { background-color: #e74c3c; }
-
-        /* Social Icons */
-        .social-container {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .social-icon {
-            color: var(--text-color);
-            font-size: 1.8rem;
-            transition: color 0.3s ease, transform 0.3s ease;
-        }
-
-        .social-icon:hover {
-            color: var(--saffron);
-            transform: scale(1.1);
-        }
-
-        /* Share Button */
-        .share-btn {
+        /* =========================================
+           THEME TOGGLE
+           ========================================= */
+        .theme-toggle {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
             background: none;
             border: none;
-            color: var(--navy);
-            font-size: 1rem;
+            font-size: 1.5rem;
+            color: var(--text-main);
             cursor: pointer;
-            font-weight: 600;
+            z-index: 20;
+            transform: translateZ(30px); /* 3D pop */
+        }
+
+        /* =========================================
+           HEADER SECTION
+           ========================================= */
+        header {
+            text-align: center;
+            transform: translateZ(50px); /* 3D pop */
+            margin-bottom: 2rem;
+        }
+
+        .profile-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--navy);
+            padding: 4px;
+            background: var(--bg-color);
+            box-shadow: 0 10px 25px var(--shadow-color);
+            animation: float 6s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+        
+        [data-theme="dark"] h1 {
+            color: #60a5fa; /* Lighter blue for dark mode */
+        }
+
+        .typing-container {
+            height: 24px;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        #typed-text::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* =========================================
+           3D BUTTON LINKS
+           ========================================= */
+        .links-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            transform: translateZ(40px); /* 3D pop */
+            margin-bottom: 2.5rem;
+        }
+
+        .btn-3d {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            margin: 0 auto;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            transition: background 0.3s;
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.1s;
+            color: var(--white);
         }
 
-        .share-btn:hover {
-            background: #f0f0f0;
+        .btn-3d i {
+            position: absolute;
+            left: 1.5rem;
+            font-size: 1.3rem;
         }
 
-        /* Footer */
-        footer {
-            margin-top: 2rem;
-            font-size: 0.85rem;
-            color: #888;
+        /* Saffron Button */
+        .btn-saffron {
+            background-color: var(--saffron);
+            box-shadow: 0 6px 0 var(--saffron-dark), 0 15px 20px rgba(0,0,0,0.2);
+        }
+        .btn-saffron:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 var(--saffron-dark), 0 5px 10px rgba(0,0,0,0.2);
         }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Green Button */
+        .btn-green {
+            background-color: var(--green);
+            box-shadow: 0 6px 0 var(--green-dark), 0 15px 20px rgba(0,0,0,0.2);
+        }
+        .btn-green:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 var(--green-dark), 0 5px 10px rgba(0,0,0,0.2);
         }
 
-        /* Toast Notification */
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
+        /* Navy Button */
+        .btn-navy {
             background-color: var(--navy);
-            color: #fff;
-            text-align: center;
-            border-radius: 5px;
-            padding: 16px;
+            box-shadow: 0 6px 0 var(--navy-dark), 0 15px 20px rgba(0,0,0,0.2);
+        }
+        .btn-navy:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 var(--navy-dark), 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        /* White/Grey Button */
+        .btn-light {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            box-shadow: 0 6px 0 #cbd5e1, 0 15px 20px rgba(0,0,0,0.1);
+            border: 1px solid var(--glass-border);
+        }
+        [data-theme="dark"] .btn-light {
+            box-shadow: 0 6px 0 #0f172a, 0 15px 20px rgba(0,0,0,0.4);
+        }
+        .btn-light:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 #cbd5e1, 0 5px 10px rgba(0,0,0,0.1);
+        }
+
+        /* =========================================
+           SOCIAL ICONS (NEON GLOW)
+           ========================================= */
+        .social-row {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            transform: translateZ(30px);
+            margin-bottom: 2rem;
+        }
+
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-size: 1.5rem;
+            text-decoration: none;
+            box-shadow:  5px 5px 10px var(--shadow-color), 
+                        -5px -5px 10px rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .social-btn:hover {
+            color: var(--white);
+            transform: translateY(-5px) scale(1.1);
+        }
+        
+        .social-btn.fb:hover { background: #1877F2; box-shadow: 0 0 15px #1877F2; }
+        .social-btn.ig:hover { background: #E4405F; box-shadow: 0 0 15px #E4405F; }
+        .social-btn.tw:hover { background: #1DA1F2; box-shadow: 0 0 15px #1DA1F2; }
+        .social-btn.yt:hover { background: #FF0000; box-shadow: 0 0 15px #FF0000; }
+
+        /* =========================================
+           MODALS (POPups)
+           ========================================= */
+        .modal-overlay {
             position: fixed;
-            z-index: 1;
-            bottom: 30px;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: var(--bg-color);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            transform: scale(0.8) translateY(50px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border-top: 4px solid var(--saffron);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem; right: 1.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-title {
+            color: var(--navy);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        [data-theme="dark"] .modal-title { color: #60a5fa; }
+
+        /* Form Inputs */
+        .input-group { margin-bottom: 1rem; }
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--text-main);
+            outline: none;
+            font-size: 1rem;
+        }
+        .input-group input:focus, .input-group textarea:focus {
+            border-color: var(--saffron);
+        }
+
+        /* =========================================
+           TOAST NOTIFICATION
+           ========================================= */
+        .toast {
+            position: fixed;
+            bottom: -100px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.9rem;
+            background: var(--navy);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: bottom 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            font-weight: 600;
         }
+        .toast.show { bottom: 30px; }
 
-        #toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        }
-
-        @keyframes fadeout {
-            from {bottom: 30px; opacity: 1;} 
-            to {bottom: 0; opacity: 0;}
+        /* =========================================
+           RESPONSIVE FIXES
+           ========================================= */
+        @media (max-width: 600px) {
+            .glass-container { padding: 2rem 1.5rem; }
+            h1 { font-size: 1.6rem; }
+            .tilt-wrapper { perspective: none; } /* Disable tilt on mobile for better UX */
+            .glass-container { transform: none !important; } 
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <img src="https://via.placeholder.com/150/FF9933/FFFFFF?text=TYS" alt="Tiranga Yuva Samiti Logo" class="profile-img">
-            <h1 class="title">Tiranga Yuva Samiti</h1>
-            <p class="tagline">Empowering Youth, Building the Nation 🇮🇳</p>
-        </header>
+    <canvas id="particle-canvas"></canvas>
 
-        <main class="links-container">
-            <a href="https://example.com/join" target="_blank" class="link-btn primary">
-                <i class="fa-solid fa-users"></i> Become a Member
-            </a>
-            <a href="https://example.com/events" target="_blank" class="link-btn secondary">
-                <i class="fa-regular fa-calendar-check"></i> Upcoming Events
-            </a>
-            <a href="https://example.com/gallery" target="_blank" class="link-btn primary">
-                <i class="fa-solid fa-images"></i> Photo Gallery
-            </a>
-            <a href="https://example.com/about" target="_blank" class="link-btn tertiary">
-                <i class="fa-solid fa-circle-info"></i> About Our Mission
-            </a>
-            <a href="https://example.com/donate" target="_blank" class="link-btn donate">
-                <i class="fa-solid fa-heart"></i> Support Our Cause
-            </a>
-        </main>
+    <div class="tilt-wrapper" id="tilt-box">
+        <div class="glass-container">
+            
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme">
+                <i class="fa-solid fa-moon" id="theme-icon"></i>
+            </button>
 
-        <div class="social-container">
-            <a href="#" class="social-icon" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
-            <a href="#" class="social-icon" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-            <a href="#" class="social-icon" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
-            <a href="#" class="social-icon" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
-            <a href="#" class="social-icon" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            <header>
+                <img src="https://via.placeholder.com/150/FF9933/FFFFFF?text=TYS" alt="TYS Logo" class="profile-img">
+                <h1>Tiranga Yuva Samiti</h1>
+                <div class="typing-container">
+                    <span id="typed-text"></span>
+                </div>
+            </header>
+
+            <div class="links-grid">
+                <a href="https://example.com/join" target="_blank" class="btn-3d btn-saffron">
+                    <i class="fa-solid fa-user-plus"></i> Join the Movement
+                </a>
+                <a href="https://example.com/events" target="_blank" class="btn-3d btn-green">
+                    <i class="fa-solid fa-calendar-days"></i> Upcoming Events
+                </a>
+                <button onclick="openModal('about-modal')" class="btn-3d btn-navy">
+                    <i class="fa-solid fa-circle-info"></i> About the Samiti
+                </button>
+                <button onclick="openModal('contact-modal')" class="btn-3d btn-light">
+                    <i class="fa-solid fa-envelope"></i> Contact Us
+                </button>
+            </div>
+
+            <div class="social-row">
+                <a href="#" class="social-btn fb"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#" class="social-btn ig"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#" class="social-btn tw"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="#" class="social-btn yt"><i class="fa-brands fa-youtube"></i></a>
+            </div>
+
+            <button class="btn-3d btn-light" onclick="sharePage()" style="font-size: 0.9rem; padding: 0.8rem; border-radius: 30px; width: auto; margin: 0 auto; display: flex;">
+                <i class="fa-solid fa-share-nodes" style="position: relative; left: 0; margin-right: 10px;"></i> Share Page
+            </button>
         </div>
-
-        <button class="share-btn" onclick="sharePage()">
-            <i class="fa-solid fa-share-nodes"></i> Share this page
-        </button>
-
-        <footer>
-            <p>&copy; 2026 Tiranga Yuva Samiti. All rights reserved.</p>
-        </footer>
     </div>
 
-    <div id="toast">Link copied to clipboard!</div>
+    <div class="modal-overlay" id="about-modal">
+        <div class="modal-content">
+            <i class="fa-solid fa-xmark close-modal" onclick="closeModal('about-modal')"></i>
+            <h2 class="modal-title">About Us</h2>
+            <p style="margin-bottom: 1rem; line-height: 1.6;">
+                <strong>Tiranga Yuva Samiti</strong> is dedicated to empowering the youth of India. We organize community drives, educational workshops, and patriotic events to build a stronger, united nation. 
+            </p>
+            <p style="line-height: 1.6;">
+                Join hands with us to bring positive change to our society. Jai Hind! 🇮🇳
+            </p>
+            <button class="btn-3d btn-saffron" style="margin-top: 1.5rem;" onclick="closeModal('about-modal')">Close</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="contact-modal">
+        <div class="modal-content">
+            <i class="fa-solid fa-xmark close-modal" onclick="closeModal('contact-modal')"></i>
+            <h2 class="modal-title">Get in Touch</h2>
+            <form onsubmit="submitForm(event)">
+                <div class="input-group">
+                    <input type="text" placeholder="Your Name" required>
+                </div>
+                <div class="input-group">
+                    <input type="email" placeholder="Your Email" required>
+                </div>
+                <div class="input-group">
+                    <textarea rows="4" placeholder="Your Message" required></textarea>
+                </div>
+                <button type="submit" class="btn-3d btn-green">Send Message</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast-msg">Action Successful!</div>
 
     <script>
+        // --- 1. Typing Animation ---
+        const phrases = [
+            "Empowering Youth 🇮🇳",
+            "Building the Nation 🤝",
+            "Unity in Diversity 🌟",
+            "Vande Mataram 🙏"
+        ];
+        let currentPhrase = 0;
+        let letterIndex = 0;
+        let isDeleting = false;
+        const typedElement = document.getElementById("typed-text");
+
+        function type() {
+            const currentText = phrases[currentPhrase];
+            if (isDeleting) {
+                typedElement.textContent = currentText.substring(0, letterIndex - 1);
+                letterIndex--;
+            } else {
+                typedElement.textContent = currentText.substring(0, letterIndex + 1);
+                letterIndex++;
+            }
+
+            let typeSpeed = isDeleting ? 50 : 100;
+
+            if (!isDeleting && letterIndex === currentText.length) {
+                typeSpeed = 2000; // Pause at end of word
+                isDeleting = true;
+            } else if (isDeleting && letterIndex === 0) {
+                isDeleting = false;
+                currentPhrase = (currentPhrase + 1) % phrases.length;
+                typeSpeed = 500; // Pause before starting new word
+            }
+
+            setTimeout(type, typeSpeed);
+        }
+        type(); // Start typing
+
+        // --- 2. 3D Tilt Effect on Desktop ---
+        const tiltBox = document.getElementById('tilt-box');
+        const glassContainer = document.querySelector('.glass-container');
+
+        tiltBox.addEventListener('mousemove', (e) => {
+            // Only apply on screens wider than 600px (desktop/tablet)
+            if(window.innerWidth > 600) {
+                const rect = tiltBox.getBoundingClientRect();
+                const x = e.clientX - rect.left; // x position within the element.
+                const y = e.clientY - rect.top;  // y position within the element.
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                // Calculate rotation (max 10 degrees)
+                const rotateX = ((y - centerY) / centerY) * -10;
+                const rotateY = ((x - centerX) / centerX) * 10;
+                
+                glassContainer.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            }
+        });
+
+        tiltBox.addEventListener('mouseleave', () => {
+            if(window.innerWidth > 600) {
+                glassContainer.style.transform = `rotateX(0deg) rotateY(0deg)`;
+            }
+        });
+
+        // --- 3. Dark/Light Theme Toggle ---
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            
+            if (html.getAttribute('data-theme') === 'light') {
+                html.setAttribute('data-theme', 'dark');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                html.setAttribute('data-theme', 'light');
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        }
+
+        // --- 4. Modal Logic ---
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        // --- 5. Form Submission Simulation ---
+        function submitForm(e) {
+            e.preventDefault();
+            closeModal('contact-modal');
+            showToast("Message sent successfully!");
+            e.target.reset();
+        }
+
+        // --- 6. Share API / Clipboard ---
         function sharePage() {
-            // Check if the Web Share API is available (works on most mobile devices)
             if (navigator.share) {
                 navigator.share({
                     title: 'Tiranga Yuva Samiti',
-                    text: 'Check out the official links for Tiranga Yuva Samiti!',
+                    text: 'Connect with Tiranga Yuva Samiti officially!',
                     url: window.location.href
                 }).catch(console.error);
             } else {
-                // Fallback for desktop: Copy link to clipboard
                 navigator.clipboard.writeText(window.location.href).then(() => {
-                    showToast();
+                    showToast("Link copied to clipboard!");
                 });
             }
         }
 
-        function showToast() {
-            var toast = document.getElementById("toast");
-            toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        // --- 7. Toast Notifications ---
+        function showToast(message) {
+            const toast = document.getElementById("toast-msg");
+            toast.textContent = message;
+            toast.classList.add("show");
+            setTimeout(() => { toast.classList.remove("show"); }, 3000);
         }
+
+        // --- 8. 3D Particle Canvas Background ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray = [];
+        // Tricolor colors
+        const colors = ['rgba(255, 153, 51, 0.7)', 'rgba(255, 255, 255, 0.7)', 'rgba(19, 136, 8, 0.7)'];
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                // Bounce off edges
+                if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
+                if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.width * canvas.height) / 9000; // Responsive amount
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+                
+                // Draw connecting lines
+                for (let j = i; j < particlesArray.length; j++) {
+                    const dx = particlesArray[i].x - particlesArray[j].x;
+                    const dy = particlesArray[i].y - particlesArray[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = document.documentElement.getAttribute('data-theme') === 'dark' 
+                            ? `rgba(255, 255, 255, ${0.1 - distance/1000})` 
+                            : `rgba(0, 0, 0, ${0.05 - distance/2000})`;
+                        ctx.lineWidth = 1;
+                        ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                        ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        });
+
+        initParticles();
+        animateParticles();
     </script>
 </body>
 </html>
